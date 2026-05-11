@@ -676,6 +676,10 @@ const ROLE_LABELS = {
   none: 'NOT LISTED',
 };
 const MARKER_RADIUS = 8;
+const WORLD_ATLAS_PATH = 'assets/world/countries-110m.json';
+const DYNAMIC_OUTBREAK_PATH = 'api/outbreak';
+const DYNAMIC_REFRESH_PATH = 'api/outbreak/refresh';
+const STATIC_OUTBREAK_PATH = 'api/outbreak.json';
 
 let outbreakData = null;
 let countryRoleMap = {}; // iso3 → role
@@ -703,8 +707,32 @@ async function init() {
 // ── Load TopoJSON world map ───────────────────────────────
 async function loadMap() {
   setStatus('loading', 'Loading world topology...');
-  topoData = await d3.json('/assets/world/countries-110m.json');
+  topoData = await d3.json(WORLD_ATLAS_PATH);
   renderMap();
+}
+
+async function fetchJson(url, options = {}) {
+  const response = await fetch(url, options);
+  if (!response.ok) {
+    throw new Error(`${url} returned ${response.status}`);
+  }
+  return response.json();
+}
+
+async function fetchOutbreakPayload(forceRefresh) {
+  const dynamicUrl = forceRefresh ? DYNAMIC_REFRESH_PATH : DYNAMIC_OUTBREAK_PATH;
+  const dynamicOptions = forceRefresh ? { method: 'POST' } : { method: 'GET' };
+
+  try {
+    const payload = await fetchJson(dynamicUrl, dynamicOptions);
+    return { payload, staticSnapshot: false };
+  } catch (dynamicError) {
+    const staticUrl = forceRefresh
+      ? `${STATIC_OUTBREAK_PATH}?ts=${Date.now()}`
+      : STATIC_OUTBREAK_PATH;
+    const payload = await fetchJson(staticUrl);
+    return { payload, staticSnapshot: true };
+  }
 }
 
 // ── Render the base map ───────────────────────────────────
@@ -790,10 +818,7 @@ async function loadOutbreakData(forceRefresh = false) {
   showOverlay(true);
 
   try {
-    const endpoint = forceRefresh ? '/api/outbreak/refresh' : '/api/outbreak';
-    const method = forceRefresh ? 'POST' : 'GET';
-    const res = await fetch(endpoint, { method });
-    const data = await res.json();
+    const { payload: data, staticSnapshot } = await fetchOutbreakPayload(forceRefresh);
 
     if (!data.ok && !data.fallback) {
       throw new Error(data.error || 'API returned error');
@@ -803,7 +828,11 @@ async function loadOutbreakData(forceRefresh = false) {
     const isFallback = Boolean(outbreakData.isFallback || data.isFallback);
 
     applyOutbreakData(outbreakData, data.fetchedAt, isFallback);
-    setStatus('ok', isFallback ? 'Using fallback data (WHO fetch failed)' : 'WHO data loaded');
+    if (staticSnapshot) {
+      setStatus('ok', isFallback ? 'Static fallback snapshot loaded' : 'Static WHO snapshot loaded');
+    } else {
+      setStatus('ok', isFallback ? 'Using fallback data (WHO fetch failed)' : 'WHO data loaded');
+    }
   } catch (err) {
     console.error('Failed to load outbreak data:', err);
     setStatus('error', 'Failed to fetch WHO data — check server logs');
