@@ -6,363 +6,633 @@
   <title>WHO Hantavirus Outbreak Tracker</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Rajdhani:wght@400;600;700&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700;800&display=swap" rel="stylesheet" />
 
   <style>
     :root {
-      --bg: #050a0e;
-      --bg2: #0a1219;
-      --bg3: #0f1c27;
-      --border: #1a3040;
-      --border2: #24485e;
-      --text: #c8dde8;
-      --text-dim: #5a7e92;
-      --text-bright: #e8f4fa;
-      --accent: #00d4ff;
-      --accent2: #0090b8;
+      --bg: #020508;
+      --bg2: rgba(4, 9, 14, 0.8);
+      --bg3: rgba(7, 16, 24, 0.92);
+      --surface: rgba(6, 14, 22, 0.78);
+      --surface-strong: rgba(5, 11, 17, 0.94);
+      --border: rgba(74, 108, 136, 0.26);
+      --border2: rgba(90, 151, 185, 0.4);
+      --text: #9db6c8;
+      --text-dim: #5d7382;
+      --text-bright: #ecf6ff;
+      --accent: #66e2ff;
+      --accent2: #1ea2bf;
+      --accent-dim: rgba(102, 226, 255, 0.18);
 
-      --color-cases: #e63946;
-      --color-exposure: #f4a261;
-      --color-monitoring: #e9c46a;
-      --color-mentioned: #4a6070;
-      --color-ocean: #060e14;
-      --color-land: #0d2030;
-      --color-graticule: #0a1a24;
-      --color-border: #162636;
+      --color-cases: #ff5f67;
+      --color-exposure: #f3b972;
+      --color-monitoring: #d5d074;
+      --color-mentioned: #587283;
+      --color-ocean: #04090e;
+      --color-land: #0b1823;
+      --color-graticule: rgba(73, 112, 141, 0.16);
+      --color-border: rgba(64, 93, 116, 0.5);
 
-      --glow-cases: 0 0 12px rgba(230, 57, 70, 0.6);
-      --glow-accent: 0 0 16px rgba(0, 212, 255, 0.4);
+      --glow-cases: 0 0 16px rgba(255, 95, 103, 0.45);
+      --glow-accent: 0 0 18px rgba(102, 226, 255, 0.28);
+      --shadow-panel: 0 18px 50px rgba(0, 0, 0, 0.36);
     }
 
     * { margin: 0; padding: 0; box-sizing: border-box; }
 
-    body {
-      background: var(--bg);
-      color: var(--text);
-      font-family: 'Rajdhani', sans-serif;
-      height: 100vh;
+    html, body {
+      width: 100%;
+      height: 100%;
       overflow: hidden;
-      display: flex;
-      flex-direction: column;
+    }
+
+    body {
+      background:
+        radial-gradient(circle at 50% 42%, rgba(56, 117, 152, 0.14), transparent 34%),
+        radial-gradient(circle at 15% 80%, rgba(0, 116, 138, 0.11), transparent 30%),
+        linear-gradient(180deg, #020407 0%, #06111a 48%, #020407 100%);
+      color: var(--text);
+      font-family: 'JetBrains Mono', monospace;
     }
 
     body.light-theme {
-      --bg: #f2f6f8;
-      --bg2: #ffffff;
-      --bg3: #ecf2f5;
-      --border: #d3dde3;
-      --border2: #b7c8d2;
-      --text: #173242;
-      --text-dim: #557182;
-      --text-bright: #08141b;
-      --color-mentioned: #7a909d;
-      --color-ocean: #ffffff;
-      --color-land: #f5f8fa;
-      --color-graticule: #e6edf2;
-      --color-border: #c7d3db;
-      --glow-accent: 0 0 16px rgba(0, 144, 184, 0.22);
+      --bg: #eef4f7;
+      --bg2: rgba(251, 253, 255, 0.82);
+      --bg3: rgba(245, 249, 252, 0.96);
+      --surface: rgba(255, 255, 255, 0.8);
+      --surface-strong: rgba(248, 251, 253, 0.94);
+      --border: rgba(101, 130, 150, 0.22);
+      --border2: rgba(39, 122, 154, 0.34);
+      --text: #375060;
+      --text-dim: #6c8290;
+      --text-bright: #08131a;
+      --accent: #007f9c;
+      --accent2: #0e6177;
+      --accent-dim: rgba(0, 127, 156, 0.08);
+      --color-mentioned: #8ba0ad;
+      --color-ocean: #f8fbfd;
+      --color-land: #edf4f8;
+      --color-graticule: rgba(80, 106, 126, 0.12);
+      --color-border: rgba(133, 153, 168, 0.55);
+      --glow-accent: 0 0 16px rgba(0, 127, 156, 0.15);
+      --shadow-panel: 0 18px 40px rgba(82, 113, 134, 0.12);
     }
 
-    /* ── Header ─────────────────────────────────────────── */
-    header {
-      display: flex;
-      align-items: center;
-      gap: 16px;
-      padding: 10px 20px;
-      background: var(--bg2);
-      border-bottom: 1px solid var(--border);
-      flex-shrink: 0;
-      position: relative;
-      z-index: 10;
-    }
-    .header-icon {
-      width: 32px; height: 32px;
-      background: var(--color-cases);
-      border-radius: 50%;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 16px;
-      box-shadow: var(--glow-cases);
-      flex-shrink: 0;
-    }
-    .header-title {
-      flex: 1;
-    }
-    .header-title h1 {
-      font-size: 18px;
-      font-weight: 700;
-      color: var(--text-bright);
-      letter-spacing: 2px;
-      text-transform: uppercase;
-    }
-    .header-title .subtitle {
-      font-family: 'DM Mono', monospace;
-      font-size: 11px;
-      color: var(--text-dim);
-      letter-spacing: 1px;
-    }
-    .header-badge {
-      font-family: 'Share Tech Mono', monospace;
-      font-size: 10px;
-      padding: 3px 8px;
-      border-radius: 2px;
-      background: rgba(230,57,70,0.15);
-      border: 1px solid var(--color-cases);
-      color: var(--color-cases);
-      letter-spacing: 1.5px;
-    }
-    .header-meta {
-      font-family: 'DM Mono', monospace;
-      font-size: 10px;
-      color: var(--text-dim);
-      text-align: right;
-    }
-    .header-meta a {
-      color: var(--accent);
+    a {
+      color: inherit;
       text-decoration: none;
     }
-    .header-meta a:hover { text-decoration: underline; }
 
-    /* ── Main layout ─────────────────────────────────── */
+    button {
+      font: inherit;
+    }
+
     .main {
-      flex: 1;
-      display: flex;
+      position: relative;
+      width: 100%;
+      height: 100vh;
+      height: 100svh;
       overflow: hidden;
+      isolation: isolate;
     }
 
-    /* ── Sidebar ─────────────────────────────────────── */
-    .sidebar {
-      width: 260px;
-      background: var(--bg2);
-      border-right: 1px solid var(--border);
+    header,
+    .sidebar,
+    .statusbar,
+    .zoom-controls {
+      z-index: 20;
+    }
+
+    header {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
       display: flex;
-      flex-direction: column;
-      flex-shrink: 0;
-      overflow: hidden;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 24px;
+      padding: 26px 30px 0;
+      pointer-events: none;
     }
-    .sidebar-section {
-      padding: 14px 16px;
-      border-bottom: 1px solid var(--border);
+
+    .header-block {
+      display: flex;
+      align-items: flex-start;
+      gap: 14px;
+      min-width: 0;
+      pointer-events: auto;
     }
-    .sidebar-section h3 {
+
+    .header-icon {
+      width: 38px;
+      height: 38px;
+      display: grid;
+      place-items: center;
+      border: 1px solid var(--border2);
+      background: linear-gradient(180deg, rgba(102, 226, 255, 0.08), rgba(102, 226, 255, 0.02));
+      box-shadow: var(--glow-accent);
+      color: var(--accent);
+    }
+
+    .header-icon svg {
+      width: 21px;
+      height: 21px;
+      stroke: currentColor;
+      fill: none;
+      stroke-width: 1.35;
+    }
+
+    .header-title {
+      min-width: 0;
+    }
+
+    .eyebrow {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 6px;
+      color: var(--text-dim);
       font-size: 10px;
-      letter-spacing: 2px;
+      letter-spacing: 0.34em;
+      text-transform: uppercase;
+    }
+
+    .eyebrow::after {
+      content: "";
+      width: 52px;
+      height: 1px;
+      background: linear-gradient(90deg, var(--accent), transparent);
+    }
+
+    .header-title h1 {
+      color: var(--text-bright);
+      font-size: 22px;
+      line-height: 1.05;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      font-weight: 800;
+      text-shadow: 0 0 18px rgba(255, 255, 255, 0.05);
+    }
+
+    .header-title .subtitle {
+      margin-top: 7px;
+      font-size: 10px;
+      line-height: 1.65;
+      letter-spacing: 0.16em;
       text-transform: uppercase;
       color: var(--text-dim);
-      margin-bottom: 10px;
-      font-family: 'DM Mono', monospace;
+      max-width: 520px;
     }
 
-    /* Legend */
-    .legend-item {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      margin-bottom: 6px;
-      cursor: pointer;
-      padding: 4px 6px;
-      border-radius: 3px;
-      transition: background 0.15s;
+    .header-badge {
+      align-self: center;
+      padding: 4px 9px;
+      border: 1px solid var(--color-cases);
+      background: rgba(255, 95, 103, 0.1);
+      color: var(--color-cases);
+      font-size: 10px;
+      letter-spacing: 0.24em;
+      text-transform: uppercase;
+      box-shadow: var(--glow-cases);
+      white-space: nowrap;
     }
-    .legend-item:hover { background: rgba(255,255,255,0.04); }
-    .legend-swatch {
-      width: 14px; height: 14px;
-      border-radius: 2px;
-      flex-shrink: 0;
-    }
-    .legend-label {
-      font-size: 13px;
-      font-weight: 600;
-      color: var(--text);
-      flex: 1;
-    }
-    .legend-count {
-      font-family: 'Share Tech Mono', monospace;
-      font-size: 11px;
+
+    .header-meta {
+      min-width: 210px;
+      padding: 10px 12px;
+      border: 1px solid var(--border);
+      background: linear-gradient(180deg, rgba(6, 13, 20, 0.88), rgba(6, 13, 20, 0.72));
+      box-shadow: var(--shadow-panel);
       color: var(--text-dim);
+      font-size: 10px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      text-align: right;
+      pointer-events: auto;
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
     }
 
-    .marker-legend {
+    .header-meta div + div {
+      margin-top: 5px;
+    }
+
+    .header-meta a {
+      color: var(--accent);
+    }
+
+    .mode-tabs {
+      position: absolute;
+      left: 50%;
+      top: 28px;
+      transform: translateX(-50%);
       display: flex;
       align-items: center;
-      gap: 10px;
-      margin-bottom: 6px;
+      gap: 6px;
+      padding: 4px;
+      border: 1px solid var(--border);
+      background: rgba(4, 9, 14, 0.62);
+      pointer-events: auto;
+      box-shadow: var(--shadow-panel);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
     }
+
+    .mode-tab {
+      padding: 9px 14px;
+      border: 1px solid transparent;
+      color: var(--text-dim);
+      background: transparent;
+      font-size: 10px;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      white-space: nowrap;
+    }
+
+    .mode-tab.active {
+      border-color: var(--accent);
+      color: var(--accent);
+      background: var(--accent-dim);
+      box-shadow: inset 0 0 0 1px rgba(102, 226, 255, 0.08), 0 0 16px rgba(102, 226, 255, 0.12);
+    }
+
+    .sidebar {
+      position: absolute;
+      top: 118px;
+      left: 24px;
+      bottom: 84px;
+      width: 348px;
+      display: flex;
+      flex-direction: column;
+      border: 1px solid var(--border);
+      background:
+        linear-gradient(180deg, rgba(8, 18, 28, 0.82), rgba(5, 10, 15, 0.9)),
+        var(--surface);
+      box-shadow: var(--shadow-panel);
+      backdrop-filter: blur(18px);
+      -webkit-backdrop-filter: blur(18px);
+      overflow: hidden;
+    }
+
+    .sidebar::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 1px;
+      background: linear-gradient(90deg, var(--accent), transparent 72%);
+      opacity: 0.7;
+      pointer-events: none;
+    }
+
+    .sidebar-heading {
+      padding: 18px 18px 14px;
+      border-bottom: 1px solid var(--border);
+      background: rgba(255, 255, 255, 0.015);
+    }
+
+    .sidebar-heading .label {
+      color: var(--text-dim);
+      font-size: 10px;
+      letter-spacing: 0.3em;
+      text-transform: uppercase;
+    }
+
+    .sidebar-heading .title {
+      margin-top: 10px;
+      color: var(--text-bright);
+      font-size: 19px;
+      line-height: 1.1;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+    }
+
+    .sidebar-heading .copy {
+      margin-top: 9px;
+      color: var(--text-dim);
+      font-size: 10px;
+      line-height: 1.6;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+    }
+
+    .sidebar-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+      padding: 16px 18px 0;
+    }
+
+    .stat-chip {
+      padding: 10px 11px;
+      border: 1px solid var(--border);
+      background: rgba(255, 255, 255, 0.018);
+      min-height: 62px;
+    }
+
+    .stat-chip .chip-label {
+      color: var(--text-dim);
+      font-size: 9px;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+    }
+
+    .stat-chip .chip-value {
+      margin-top: 8px;
+      color: var(--text-bright);
+      font-size: 20px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .sidebar-section {
+      padding: 16px 18px;
+      border-top: 1px solid var(--border);
+    }
+
+    .section-label {
+      margin-bottom: 12px;
+      color: var(--text-dim);
+      font-size: 10px;
+      letter-spacing: 0.24em;
+      text-transform: uppercase;
+    }
+
+    .legend-list,
+    .marker-list {
+      display: grid;
+      gap: 8px;
+    }
+
+    .legend-item,
+    .marker-legend {
+      display: grid;
+      grid-template-columns: auto 1fr auto;
+      align-items: center;
+      gap: 10px;
+      padding: 8px 10px;
+      border: 1px solid transparent;
+      background: rgba(255, 255, 255, 0.018);
+      transition: border-color 0.15s, background 0.15s;
+    }
+
+    .legend-item:hover,
+    .marker-legend:hover,
+    .country-item:hover {
+      border-color: rgba(102, 226, 255, 0.22);
+      background: rgba(102, 226, 255, 0.06);
+    }
+
+    .legend-swatch {
+      width: 10px;
+      height: 10px;
+      box-shadow: 0 0 10px rgba(255, 255, 255, 0.08);
+    }
+
+    .legend-label,
+    .marker-label {
+      color: var(--text);
+      font-size: 11px;
+      line-height: 1.45;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .legend-count,
+    .marker-meta {
+      color: var(--text-dim);
+      font-size: 10px;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+    }
+
     .marker-icon {
       width: 20px;
-      text-align: center;
-      font-size: 14px;
+      height: 20px;
+      display: grid;
+      place-items: center;
+      border: 1px solid var(--border);
+      color: var(--text-bright);
+      font-size: 10px;
     }
 
-    /* Country list */
     .country-list {
       flex: 1;
       overflow-y: auto;
-      padding: 8px 0;
+      padding: 14px 10px 10px;
     }
-    .country-list::-webkit-scrollbar { width: 3px; }
-    .country-list::-webkit-scrollbar-track { background: var(--bg2); }
-    .country-list::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 2px; }
+
+    .country-list::-webkit-scrollbar { width: 4px; }
+    .country-list::-webkit-scrollbar-track { background: transparent; }
+    .country-list::-webkit-scrollbar-thumb { background: rgba(90, 151, 185, 0.24); }
 
     .country-item {
       display: flex;
       align-items: flex-start;
       gap: 10px;
-      padding: 7px 16px;
+      padding: 10px 12px;
+      border: 1px solid transparent;
+      transition: border-color 0.15s, background 0.15s;
       cursor: pointer;
-      transition: background 0.12s;
-    }
-    .country-item:hover { background: rgba(0, 212, 255, 0.05); }
-    .country-dot {
-      width: 8px; height: 8px;
-      border-radius: 50%;
-      flex-shrink: 0;
-    }
-    .country-copy {
-      flex: 1;
-      min-width: 0;
-    }
-    .country-name {
-      font-size: 13px;
-      color: var(--text);
-      display: block;
-    }
-    .country-evidence {
-      margin-top: 3px;
-      font-family: 'DM Mono', monospace;
-      font-size: 10px;
-      line-height: 1.4;
-      color: var(--text-dim);
-    }
-    .country-role-badge {
-      font-family: 'Share Tech Mono', monospace;
-      font-size: 9px;
-      padding: 1px 5px;
-      border-radius: 2px;
-      letter-spacing: 0.5px;
     }
 
-    /* Controls */
-    .controls {
-      padding: 12px 16px;
-      border-top: 1px solid var(--border);
-      display: flex;
-      flex-direction: column;
-      gap: 6px;
+    .country-dot {
+      width: 8px;
+      height: 8px;
+      margin-top: 6px;
+      flex-shrink: 0;
+      border-radius: 50%;
     }
-    .btn {
-      font-family: 'Rajdhani', sans-serif;
+
+    .country-copy {
+      min-width: 0;
+      flex: 1;
+    }
+
+    .country-name {
+      display: block;
+      color: var(--text-bright);
       font-size: 12px;
-      font-weight: 600;
-      letter-spacing: 1.5px;
+      letter-spacing: 0.12em;
       text-transform: uppercase;
-      padding: 7px 12px;
-      border: 1px solid var(--border2);
-      background: transparent;
-      color: var(--text);
-      border-radius: 3px;
-      cursor: pointer;
-      transition: all 0.15s;
-      width: 100%;
     }
+
+    .country-evidence {
+      margin-top: 5px;
+      color: var(--text-dim);
+      font-size: 10px;
+      line-height: 1.55;
+    }
+
+    .country-role-badge {
+      flex-shrink: 0;
+      margin-top: 1px;
+      padding: 3px 6px;
+      font-size: 9px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+    }
+
+    .controls {
+      display: grid;
+      gap: 8px;
+      padding: 14px 18px 18px;
+      border-top: 1px solid var(--border);
+      background: rgba(255, 255, 255, 0.02);
+    }
+
+    .btn {
+      width: 100%;
+      padding: 11px 12px;
+      border: 1px solid var(--border);
+      background: rgba(255, 255, 255, 0.02);
+      color: var(--text);
+      font-size: 10px;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: border-color 0.15s, color 0.15s, background 0.15s, transform 0.15s;
+    }
+
     .btn:hover {
       border-color: var(--accent);
       color: var(--accent);
-      background: rgba(0, 212, 255, 0.05);
-    }
-    .btn.primary {
-      border-color: var(--color-cases);
-      color: var(--color-cases);
-    }
-    .btn.primary:hover {
-      background: rgba(230, 57, 70, 0.1);
-    }
-    .btn:disabled {
-      opacity: 0.4;
-      cursor: not-allowed;
+      background: rgba(102, 226, 255, 0.08);
+      transform: translateY(-1px);
     }
 
-    /* ── Map area ────────────────────────────────────── */
+    .btn.primary {
+      border-color: rgba(255, 95, 103, 0.46);
+      color: var(--color-cases);
+      background: rgba(255, 95, 103, 0.06);
+    }
+
+    .btn.primary:hover {
+      border-color: var(--color-cases);
+      background: rgba(255, 95, 103, 0.1);
+      box-shadow: var(--glow-cases);
+    }
+
+    .btn:disabled {
+      opacity: 0.45;
+      cursor: not-allowed;
+      transform: none;
+    }
+
     .map-container {
-      flex: 1;
-      position: relative;
+      position: absolute;
+      inset: 0;
       overflow: hidden;
-      background: var(--color-ocean);
+      background:
+        radial-gradient(circle at 50% 52%, rgba(26, 84, 116, 0.17), transparent 34%),
+        radial-gradient(circle at 0% 100%, rgba(10, 67, 84, 0.18), transparent 28%),
+        linear-gradient(180deg, #020508 0%, #07111a 45%, #020508 100%);
+    }
+
+    .map-overlay,
+    .map-vignette,
+    .scanline {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+    }
+
+    .map-overlay {
+      background-image:
+        linear-gradient(var(--color-graticule) 1px, transparent 1px),
+        linear-gradient(90deg, var(--color-graticule) 1px, transparent 1px);
+      background-size: 112px 112px;
+      opacity: 0.38;
+      z-index: 2;
+    }
+
+    .map-vignette {
+      background:
+        radial-gradient(circle at center, transparent 0%, transparent 52%, rgba(3, 7, 11, 0.56) 100%),
+        repeating-linear-gradient(180deg, transparent 0 3px, rgba(255, 255, 255, 0.018) 3px 4px);
+      opacity: 0.9;
+      z-index: 3;
+    }
+
+    .scanline {
+      z-index: 4;
+      overflow: hidden;
+    }
+
+    .scanline::before {
+      content: "";
+      position: absolute;
+      left: 0;
+      right: 0;
+      top: -5%;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, var(--accent), transparent);
+      opacity: 0.34;
+      animation: sweep 6s linear infinite;
+    }
+
+    @keyframes sweep {
+      0% { transform: translateY(0); }
+      100% { transform: translateY(115vh); }
     }
 
     #map-svg {
+      position: relative;
+      z-index: 1;
       width: 100%;
       height: 100%;
       cursor: grab;
     }
+
     #map-svg:active { cursor: grabbing; }
 
-    /* Graticule */
-    .graticule { fill: none; stroke: var(--color-graticule); stroke-width: 0.3; }
+    .graticule { fill: none; stroke: var(--color-graticule); stroke-width: 0.45; }
     .sphere { fill: var(--color-ocean); }
-    .country { stroke: var(--color-border); stroke-width: 0.5; transition: opacity 0.2s; }
-    .country:hover { stroke: rgba(0, 212, 255, 0.5); stroke-width: 1; }
+    .country {
+      stroke: var(--color-border);
+      stroke-width: 0.55;
+      transition: opacity 0.2s, stroke 0.2s, filter 0.2s;
+    }
 
-    /* Country fill colors */
-    .country[data-role="cases"]     { fill: var(--color-cases); }
-    .country[data-role="exposure"]  { fill: var(--color-exposure); }
-    .country[data-role="monitoring"]{ fill: var(--color-monitoring); }
+    .country:hover {
+      stroke: rgba(102, 226, 255, 0.7);
+      stroke-width: 0.9;
+      filter: drop-shadow(0 0 6px rgba(102, 226, 255, 0.18));
+    }
+
+    .country[data-role="cases"] { fill: var(--color-cases); }
+    .country[data-role="exposure"] { fill: var(--color-exposure); }
+    .country[data-role="monitoring"] { fill: var(--color-monitoring); }
     .country[data-role="mentioned"] { fill: var(--color-mentioned); }
-    .country[data-role="none"]      { fill: var(--color-land); }
+    .country[data-role="none"] { fill: var(--color-land); }
 
-    /* Country labels */
-    .country-label {
-      font-family: 'DM Mono', monospace;
-      font-size: 8px;
-      fill: rgba(200, 221, 232, 0.55);
-      pointer-events: none;
-      text-anchor: middle;
-      dominant-baseline: middle;
-    }
-    .country-label.active {
-      fill: var(--text-bright);
-      font-size: 9px;
-      font-weight: bold;
-    }
-
-    /* Markers */
-    .marker-death-group {
-      pointer-events: all;
-      cursor: pointer;
-    }
-    .marker-death-badge {
-      fill: #68151e;
-      stroke: #ff8080;
-      stroke-width: 1.5;
-      filter: drop-shadow(0 0 5px rgba(230, 57, 70, 0.75));
-    }
-    .marker-death-count {
-      fill: var(--text-bright);
-      font-family: 'Share Tech Mono', monospace;
-      font-size: 10px;
-      font-weight: 700;
-      text-anchor: middle;
-      dominant-baseline: middle;
-      pointer-events: none;
-    }
-    .marker-death-icon {
-      fill: var(--text-bright);
-      font-size: 8px;
-      text-anchor: middle;
-      dominant-baseline: middle;
-      pointer-events: none;
-    }
-    .marker-case {
-      fill: var(--color-cases);
-      stroke: #ff8080;
-      stroke-width: 1.5;
-    }
+    .marker-death-group,
     .marker-case-group {
       pointer-events: all;
       cursor: pointer;
     }
-    .marker-case-count {
+
+    .marker-death-badge {
+      fill: #67161e;
+      stroke: #ff8e94;
+      stroke-width: 1.45;
+      filter: drop-shadow(0 0 7px rgba(255, 95, 103, 0.55));
+    }
+
+    .marker-case {
+      fill: var(--color-cases);
+      stroke: #ffc1b8;
+      stroke-width: 1.35;
+      filter: drop-shadow(0 0 8px rgba(255, 95, 103, 0.34));
+    }
+
+    .marker-death-count,
+    .marker-case-count,
+    .marker-death-icon {
       fill: var(--text-bright);
-      font-family: 'Share Tech Mono', monospace;
+      font-family: 'JetBrains Mono', monospace;
       font-size: 10px;
       font-weight: 700;
       text-anchor: middle;
@@ -370,248 +640,413 @@
       pointer-events: none;
     }
 
-    /* Zoom controls */
+    .marker-death-icon {
+      font-size: 8px;
+    }
+
     .zoom-controls {
       position: absolute;
-      bottom: 20px;
-      right: 20px;
-      display: flex;
-      flex-direction: column;
-      gap: 4px;
+      right: 24px;
+      bottom: 96px;
+      display: grid;
+      gap: 8px;
     }
+
     .zoom-btn {
-      width: 32px; height: 32px;
-      background: var(--bg2);
-      border: 1px solid var(--border2);
+      width: 44px;
+      height: 44px;
+      display: grid;
+      place-items: center;
+      border: 1px solid var(--border);
+      background: rgba(6, 12, 18, 0.72);
       color: var(--text);
-      font-size: 16px;
-      border-radius: 4px;
+      font-size: 18px;
       cursor: pointer;
-      display: flex; align-items: center; justify-content: center;
-      transition: all 0.15s;
-      font-family: monospace;
+      transition: border-color 0.15s, color 0.15s, background 0.15s;
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
     }
+
     .zoom-btn:hover {
       border-color: var(--accent);
       color: var(--accent);
+      background: rgba(102, 226, 255, 0.08);
     }
 
-    /* Tooltip */
     #tooltip {
       position: absolute;
-      background: var(--bg2);
+      max-width: 260px;
+      padding: 12px 14px;
       border: 1px solid var(--border2);
-      border-radius: 4px;
-      padding: 10px 14px;
-      pointer-events: none;
+      background: rgba(6, 13, 20, 0.94);
+      color: var(--text);
       opacity: 0;
+      pointer-events: none;
       transition: opacity 0.15s;
-      font-size: 13px;
-      max-width: 220px;
-      z-index: 100;
+      z-index: 40;
+      box-shadow: var(--shadow-panel);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
     }
+
     #tooltip.visible { opacity: 1; }
+
     #tooltip .tt-name {
-      font-weight: 700;
+      margin-bottom: 5px;
       color: var(--text-bright);
-      font-size: 14px;
-      margin-bottom: 4px;
+      font-size: 12px;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
     }
+
     #tooltip .tt-role {
-      font-family: 'DM Mono', monospace;
-      font-size: 11px;
-      padding: 2px 6px;
-      border-radius: 2px;
       display: inline-block;
-      margin-bottom: 4px;
+      margin-bottom: 7px;
+      padding: 3px 7px;
+      font-size: 9px;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
     }
-    #tooltip .tt-meta { font-size: 11px; color: var(--text-dim); }
+
+    #tooltip .tt-meta {
+      color: var(--text-dim);
+      font-size: 10px;
+      line-height: 1.45;
+    }
+
     #tooltip .tt-evidence {
       margin-top: 8px;
       padding-top: 8px;
-      border-top: 1px solid rgba(36, 72, 94, 0.4);
-      font-family: 'DM Mono', monospace;
+      border-top: 1px solid rgba(90, 151, 185, 0.18);
       font-size: 10px;
-      line-height: 1.45;
-      color: var(--text);
+      line-height: 1.55;
     }
 
-    /* Status bar */
-    .statusbar {
-      height: 24px;
-      background: var(--bg2);
-      border-top: 1px solid var(--border);
-      display: flex;
-      align-items: center;
-      padding: 0 16px;
-      gap: 20px;
-      flex-shrink: 0;
-    }
-    .status-item {
-      font-family: 'Share Tech Mono', monospace;
-      font-size: 10px;
-      color: var(--text-dim);
-      display: flex;
-      align-items: center;
-      gap: 5px;
-    }
-    .status-dot {
-      width: 6px; height: 6px;
-      border-radius: 50%;
-      background: var(--accent);
-      box-shadow: 0 0 6px var(--accent);
-    }
-    .status-dot.loading {
-      background: var(--color-monitoring);
-      animation: blink 0.8s ease-in-out infinite;
-      box-shadow: 0 0 6px var(--color-monitoring);
-    }
-    .status-dot.error {
-      background: var(--color-cases);
-      box-shadow: var(--glow-cases);
-    }
-    @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.3} }
-
-    /* Loading overlay */
     #loading-overlay {
       position: absolute;
       inset: 0;
-      background: rgba(5, 10, 14, 0.85);
+      z-index: 30;
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      z-index: 50;
-      gap: 16px;
-    }
-    #loading-overlay.hidden { display: none; }
-    .loading-spinner {
-      width: 40px; height: 40px;
-      border: 2px solid var(--border);
-      border-top-color: var(--accent);
-      border-radius: 50%;
-      animation: spin 0.8s linear infinite;
-    }
-    @keyframes spin { to { transform: rotate(360deg); } }
-    .loading-text {
-      font-family: 'Share Tech Mono', monospace;
-      font-size: 12px;
-      color: var(--text-dim);
-      letter-spacing: 2px;
+      gap: 18px;
+      background: rgba(2, 6, 10, 0.76);
+      backdrop-filter: blur(4px);
+      -webkit-backdrop-filter: blur(4px);
     }
 
-    /* Scan line effect */
-    .map-container::after {
-      content: '';
+    #loading-overlay.hidden { display: none; }
+
+    .loading-spinner {
+      width: 44px;
+      height: 44px;
+      border: 2px solid rgba(102, 226, 255, 0.18);
+      border-top-color: var(--accent);
+      border-radius: 50%;
+      animation: spin 0.85s linear infinite;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .loading-text {
+      color: var(--text-dim);
+      font-size: 11px;
+      letter-spacing: 0.28em;
+      text-transform: uppercase;
+    }
+
+    .statusbar {
       position: absolute;
-      inset: 0;
-      background: repeating-linear-gradient(
-        0deg,
-        transparent,
-        transparent 2px,
-        rgba(0, 0, 0, 0.03) 2px,
-        rgba(0, 0, 0, 0.03) 4px
-      );
+      left: 24px;
+      right: 24px;
+      bottom: 20px;
+      display: flex;
+      align-items: center;
+      gap: 18px;
+      min-height: 46px;
+      padding: 11px 14px;
+      border: 1px solid var(--border);
+      background: linear-gradient(180deg, rgba(6, 12, 18, 0.76), rgba(6, 12, 18, 0.88));
+      color: var(--text-dim);
+      box-shadow: var(--shadow-panel);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+    }
+
+    .status-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      min-width: 0;
+      font-size: 10px;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+    }
+
+    .status-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--accent);
+      box-shadow: 0 0 8px var(--accent);
+      flex-shrink: 0;
+    }
+
+    .status-dot.loading {
+      background: var(--color-monitoring);
+      box-shadow: 0 0 8px var(--color-monitoring);
+      animation: blink 0.9s ease-in-out infinite;
+    }
+
+    .status-dot.error {
+      background: var(--color-cases);
+      box-shadow: var(--glow-cases);
+    }
+
+    @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
+
+    .statusbar a {
+      color: var(--accent);
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .corner {
+      position: absolute;
+      width: 42px;
+      height: 42px;
+      border-color: rgba(90, 151, 185, 0.42);
+      border-style: solid;
       pointer-events: none;
       z-index: 5;
     }
 
-    /* Corner decorations */
-    .corner {
-      position: absolute;
-      width: 16px; height: 16px;
-      border-color: var(--border2);
-      border-style: solid;
-      pointer-events: none;
-      z-index: 6;
+    .corner.tl { top: 14px; left: 14px; border-width: 2px 0 0 2px; }
+    .corner.tr { top: 14px; right: 14px; border-width: 2px 2px 0 0; }
+    .corner.bl { bottom: 14px; left: 14px; border-width: 0 0 2px 2px; }
+    .corner.br { bottom: 14px; right: 14px; border-width: 0 2px 2px 0; }
+
+    @media (max-width: 1100px) {
+      header {
+        flex-wrap: wrap;
+        gap: 14px;
+        padding: 18px 18px 0;
+      }
+
+      .mode-tabs {
+        position: static;
+        transform: none;
+        order: 3;
+        width: 100%;
+        justify-content: flex-start;
+      }
+
+      .header-meta {
+        min-width: 0;
+        margin-left: auto;
+      }
+
+      .sidebar {
+        left: 18px;
+        right: 18px;
+        top: auto;
+        bottom: 78px;
+        width: auto;
+        max-height: 44vh;
+      }
+
+      .controls {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .zoom-controls {
+        right: 18px;
+        bottom: calc(44vh + 96px);
+      }
+
+      .statusbar {
+        left: 18px;
+        right: 18px;
+      }
     }
-    .corner.tl { top: 8px; left: 8px; border-width: 1px 0 0 1px; }
-    .corner.tr { top: 8px; right: 8px; border-width: 1px 1px 0 0; }
-    .corner.bl { bottom: 8px; left: 8px; border-width: 0 0 1px 1px; }
-    .corner.br { bottom: 8px; right: 8px; border-width: 0 1px 1px 0; }
+
+    @media (max-width: 720px) {
+      html,
+      body {
+        overflow: auto;
+      }
+
+      .main {
+        display: flex;
+        flex-direction: column;
+        min-height: 100svh;
+        height: auto;
+        overflow: visible;
+      }
+
+      header {
+        left: 14px;
+        right: 14px;
+        padding: 14px 0 0;
+        gap: 10px;
+      }
+
+      .header-block {
+        gap: 10px;
+        max-width: calc(100% - 56px);
+      }
+
+      .header-icon {
+        width: 32px;
+        height: 32px;
+      }
+
+      .header-icon svg {
+        width: 18px;
+        height: 18px;
+      }
+
+      .eyebrow {
+        margin-bottom: 4px;
+        font-size: 8px;
+        letter-spacing: 0.24em;
+      }
+
+      .header-title h1 {
+        font-size: 16px;
+        letter-spacing: 0.12em;
+      }
+
+      .header-title .subtitle,
+      .header-meta,
+      .mode-tabs {
+        font-size: 9px;
+      }
+
+      .header-title .subtitle {
+        margin-top: 5px;
+        max-width: 100%;
+        line-height: 1.45;
+        letter-spacing: 0.1em;
+      }
+
+      .header-badge {
+        padding: 4px 6px;
+        font-size: 9px;
+        letter-spacing: 0.14em;
+      }
+
+      .header-meta,
+      .mode-tabs {
+        display: none;
+      }
+
+      .map-container {
+        position: relative;
+        inset: auto;
+        order: 1;
+        width: 100%;
+        height: 58svh;
+        min-height: 360px;
+        flex: 0 0 auto;
+      }
+
+      .sidebar-grid,
+      .controls {
+        grid-template-columns: 1fr;
+      }
+
+      .sidebar {
+        position: relative;
+        order: 3;
+        top: auto;
+        left: auto;
+        right: auto;
+        bottom: auto;
+        width: 100%;
+        max-height: none;
+        border-left: 0;
+        border-right: 0;
+        border-bottom: 0;
+        box-shadow: none;
+        backdrop-filter: none;
+        -webkit-backdrop-filter: none;
+      }
+
+      .sidebar-heading,
+      .sidebar-section,
+      .controls {
+        padding-left: 14px;
+        padding-right: 14px;
+      }
+
+      .sidebar-grid {
+        padding-left: 14px;
+        padding-right: 14px;
+      }
+
+      .country-list {
+        max-height: 36svh;
+        padding-left: 8px;
+        padding-right: 8px;
+      }
+
+      .statusbar {
+        position: relative;
+        order: 2;
+        left: auto;
+        right: auto;
+        bottom: auto;
+        margin: 0;
+        border-left: 0;
+        border-right: 0;
+        border-bottom: 0;
+        box-shadow: none;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 6px;
+        padding: 12px 14px;
+        min-height: 0;
+      }
+
+      .zoom-controls {
+        right: 14px;
+        bottom: 14px;
+      }
+
+      .zoom-btn {
+        width: 40px;
+        height: 40px;
+      }
+
+      .marker-death-count,
+      .marker-case-count {
+        font-size: 8px;
+      }
+
+      .marker-death-icon {
+        font-size: 6px;
+      }
+
+      .corner {
+        width: 28px;
+        height: 28px;
+      }
+
+      #tooltip {
+        max-width: min(220px, calc(100vw - 28px));
+      }
+    }
   </style>
 </head>
 <body>
-
-<!-- Header -->
-<header>
-  <div class="header-icon">☣</div>
-  <div class="header-title">
-    <h1>WHO Hantavirus Outbreak Tracker</h1>
-    <div class="subtitle" id="header-subtitle">Initializing data stream...</div>
-  </div>
-  <div class="header-badge" id="freshness-badge">LIVE</div>
-  <div class="header-meta">
-    <div>Source: <a href="https://www.who.int" target="_blank">who.int</a></div>
-    <div id="fetched-at-label">—</div>
-  </div>
-</header>
-
-<!-- Main -->
 <div class="main">
-
-  <!-- Sidebar -->
-  <div class="sidebar">
-
-    <div class="sidebar-section">
-      <h3>Country Role</h3>
-      <div class="legend-item" data-filter="cases">
-        <div class="legend-swatch" style="background:var(--color-cases)"></div>
-        <span class="legend-label">Active Cases</span>
-        <span class="legend-count" id="count-cases">—</span>
-      </div>
-      <div class="legend-item" data-filter="exposure">
-        <div class="legend-swatch" style="background:var(--color-exposure)"></div>
-        <span class="legend-label">Exposure Source</span>
-        <span class="legend-count" id="count-exposure">—</span>
-      </div>
-      <div class="legend-item" data-filter="monitoring">
-        <div class="legend-swatch" style="background:var(--color-monitoring)"></div>
-        <span class="legend-label">Monitoring</span>
-        <span class="legend-count" id="count-monitoring">—</span>
-      </div>
-      <div class="legend-item" data-filter="mentioned">
-        <div class="legend-swatch" style="background:var(--color-mentioned)"></div>
-        <span class="legend-label">Response Mention</span>
-        <span class="legend-count" id="count-mentioned">—</span>
-      </div>
-    </div>
-
-    <div class="sidebar-section">
-      <h3>Location Markers</h3>
-      <div class="marker-legend">
-        <div class="marker-icon">💀</div>
-        <span style="font-size:13px">Death location</span>
-      </div>
-      <div class="marker-legend">
-        <div class="marker-icon">
-          <svg width="14" height="14" viewBox="0 0 14 14">
-            <circle cx="7" cy="7" r="5" fill="var(--color-cases)" stroke="#ff8080" stroke-width="1.5"/>
-          </svg>
-        </div>
-        <span style="font-size:13px">Active case location</span>
-      </div>
-    </div>
-
-    <div class="country-list" id="country-list">
-      <div style="padding: 12px 16px; font-family:'DM Mono',monospace; font-size:11px; color:var(--text-dim)">
-        Loading country data...
-      </div>
-    </div>
-
-    <div class="controls">
-      <button class="btn primary" id="btn-refresh">⟳ &nbsp;Refresh WHO Data</button>
-      <button class="btn" id="btn-reset-zoom">Reset Zoom</button>
-      <button class="btn" id="btn-theme">White Theme</button>
-      <a href="https://www.who.int/news-room/fact-sheets/detail/hantavirus" target="_blank" style="text-decoration:none">
-        <button class="btn" style="font-size:11px">WHO Hantavirus Fact Sheet ↗</button>
-      </a>
-    </div>
-
-  </div>
-
-  <!-- Map -->
   <div class="map-container" id="map-container">
+    <div class="map-overlay"></div>
+    <div class="map-vignette"></div>
+    <div class="scanline"></div>
     <div class="corner tl"></div>
     <div class="corner tr"></div>
     <div class="corner bl"></div>
@@ -619,19 +1054,16 @@
 
     <svg id="map-svg"></svg>
 
-    <!-- Zoom controls -->
     <div class="zoom-controls">
       <button class="zoom-btn" id="zoom-in" title="Zoom in">+</button>
-      <button class="zoom-btn" id="zoom-out" title="Zoom out">−</button>
+      <button class="zoom-btn" id="zoom-out" title="Zoom out">-</button>
     </div>
 
-    <!-- Loading overlay -->
     <div id="loading-overlay">
       <div class="loading-spinner"></div>
-      <div class="loading-text">FETCHING WHO DATA</div>
+      <div class="loading-text">Connecting to WHO feed</div>
     </div>
 
-    <!-- Tooltip -->
     <div id="tooltip">
       <div class="tt-name" id="tt-name"></div>
       <div class="tt-role" id="tt-role"></div>
@@ -639,28 +1071,139 @@
       <div class="tt-evidence" id="tt-evidence"></div>
     </div>
   </div>
+
+  <header>
+    <div class="header-block">
+      <div class="header-icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24">
+          <circle cx="12" cy="12" r="8.5"></circle>
+          <path d="M3.5 12h17"></path>
+          <path d="M12 3.5c2.7 2.3 4.1 5.1 4.1 8.5 0 3.3-1.4 6.2-4.1 8.5"></path>
+          <path d="M12 3.5c-2.7 2.3-4.1 5.1-4.1 8.5 0 3.3 1.4 6.2 4.1 8.5"></path>
+        </svg>
+      </div>
+      <div class="header-title">
+        <div class="eyebrow">WHO Signal Monitor</div>
+        <h1>Hantavirus Tracker</h1>
+        <div class="subtitle" id="header-subtitle">Initializing outbreak stream</div>
+      </div>
+      <div class="header-badge" id="freshness-badge">LIVE</div>
+    </div>
+
+    <div class="mode-tabs" aria-hidden="true">
+      <div class="mode-tab active">The Map</div>
+      <div class="mode-tab">The Brief</div>
+      <div class="mode-tab">The Source</div>
+    </div>
+
+    <div class="header-meta">
+      <div>Source: <a href="https://www.who.int" target="_blank" rel="noreferrer">who.int</a></div>
+      <div id="fetched-at-label">Awaiting fetch</div>
+    </div>
+  </header>
+
+  <aside class="sidebar">
+    <div class="sidebar-heading">
+      <div class="label">The Brief</div>
+      <div class="title">Live outbreak footprint</div>
+      <div class="copy">WHO article parsing, country role classification, and location markers aligned to the latest detected report.</div>
+    </div>
+
+    <div class="sidebar-grid">
+      <div class="stat-chip">
+        <div class="chip-label">Case regions</div>
+        <div class="chip-value" id="count-cases">-</div>
+      </div>
+      <div class="stat-chip">
+        <div class="chip-label">Exposure regions</div>
+        <div class="chip-value" id="count-exposure">-</div>
+      </div>
+      <div class="stat-chip">
+        <div class="chip-label">Monitoring zones</div>
+        <div class="chip-value" id="count-monitoring">-</div>
+      </div>
+      <div class="stat-chip">
+        <div class="chip-label">Response mentions</div>
+        <div class="chip-value" id="count-mentioned">-</div>
+      </div>
+    </div>
+
+    <div class="sidebar-section">
+      <div class="section-label">Signal roles</div>
+      <div class="legend-list">
+        <div class="legend-item" data-filter="cases">
+          <div class="legend-swatch" style="background:var(--color-cases)"></div>
+          <span class="legend-label">Active cases</span>
+          <span class="legend-count">Hot</span>
+        </div>
+        <div class="legend-item" data-filter="exposure">
+          <div class="legend-swatch" style="background:var(--color-exposure)"></div>
+          <span class="legend-label">Exposure source</span>
+          <span class="legend-count">Trace</span>
+        </div>
+        <div class="legend-item" data-filter="monitoring">
+          <div class="legend-swatch" style="background:var(--color-monitoring)"></div>
+          <span class="legend-label">Monitoring</span>
+          <span class="legend-count">Watch</span>
+        </div>
+        <div class="legend-item" data-filter="mentioned">
+          <div class="legend-swatch" style="background:var(--color-mentioned)"></div>
+          <span class="legend-label">Response mention</span>
+          <span class="legend-count">Ref</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="sidebar-section">
+      <div class="section-label">Markers</div>
+      <div class="marker-list">
+        <div class="marker-legend">
+          <div class="marker-icon">X</div>
+          <span class="marker-label">Death location</span>
+          <span class="marker-meta">Fatal</span>
+        </div>
+        <div class="marker-legend">
+          <div class="marker-icon">
+            <svg width="14" height="14" viewBox="0 0 14 14" aria-hidden="true">
+              <circle cx="7" cy="7" r="5" fill="var(--color-cases)" stroke="#ffc1b8" stroke-width="1.5"/>
+            </svg>
+          </div>
+          <span class="marker-label">Active case location</span>
+          <span class="marker-meta">Case</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="country-list" id="country-list">
+      <div style="padding:12px;color:var(--text-dim);font-size:10px;letter-spacing:0.14em;text-transform:uppercase">
+        Loading country data...
+      </div>
+    </div>
+
+    <div class="controls">
+      <button class="btn primary" id="btn-refresh">Refresh WHO data</button>
+      <button class="btn" id="btn-reset-zoom">Reset zoom</button>
+      <button class="btn" id="btn-theme">White Theme</button>
+      <a class="btn" href="https://www.who.int/news-room/fact-sheets/detail/hantavirus" target="_blank" rel="noreferrer">WHO fact sheet</a>
+    </div>
+  </aside>
+
+  <div class="statusbar">
+    <div class="status-item">
+      <div class="status-dot loading" id="status-dot"></div>
+      <span id="status-text">Connecting...</span>
+    </div>
+    <div class="status-item" id="status-article" style="display:none">
+      Article:
+      <a href="#" id="status-article-link" target="_blank" rel="noreferrer">-</a>
+    </div>
+  </div>
 </div>
 
-<!-- Status bar -->
-<div class="statusbar">
-  <div class="status-item">
-    <div class="status-dot loading" id="status-dot"></div>
-    <span id="status-text">Connecting...</span>
-  </div>
-  <div class="status-item" id="status-article" style="display:none">
-    ARTICLE: <a href="#" id="status-article-link" target="_blank" style="color:var(--accent);text-decoration:none">—</a>
-  </div>
-</div>
-
-<!-- D3 & TopoJSON via CDN -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/topojson/3.0.2/topojson.min.js"></script>
 
 <script>
-// ═══════════════════════════════════════════════════════════
-//  WHO HANTAVIRUS TRACKER — Frontend
-// ═══════════════════════════════════════════════════════════
-
 const ROLE_COLORS = {
   cases: 'var(--color-cases)',
   exposure: 'var(--color-exposure)',
@@ -668,6 +1211,7 @@ const ROLE_COLORS = {
   mentioned: 'var(--color-mentioned)',
   none: 'var(--color-land)',
 };
+
 const ROLE_LABELS = {
   cases: 'ACTIVE CASES',
   exposure: 'EXPOSURE',
@@ -675,6 +1219,7 @@ const ROLE_LABELS = {
   mentioned: 'MENTIONED',
   none: 'NOT LISTED',
 };
+
 const MARKER_RADIUS = 8;
 const WORLD_ATLAS_PATH = 'assets/world/countries-110m.json';
 const DYNAMIC_OUTBREAK_PATH = 'api/outbreak';
@@ -682,7 +1227,7 @@ const DYNAMIC_REFRESH_PATH = 'api/outbreak/refresh';
 const STATIC_OUTBREAK_PATH = 'api/outbreak.json';
 
 let outbreakData = null;
-let countryRoleMap = {}; // iso3 → role
+let countryRoleMap = {};
 let topoData = null;
 let svgSelection, gMap, projection, pathGen, zoom;
 let currentTheme = localStorage.getItem('tracker-theme') || 'dark';
@@ -697,14 +1242,12 @@ function applyTheme(theme) {
   localStorage.setItem('tracker-theme', currentTheme);
 }
 
-// ── Init ──────────────────────────────────────────────────
 async function init() {
   applyTheme(currentTheme);
   await loadMap();
   await loadOutbreakData();
 }
 
-// ── Load TopoJSON world map ───────────────────────────────
 async function loadMap() {
   setStatus('loading', 'Loading world topology...');
   topoData = await d3.json(WORLD_ATLAS_PATH);
@@ -735,7 +1278,14 @@ async function fetchOutbreakPayload(forceRefresh) {
   }
 }
 
-// ── Render the base map ───────────────────────────────────
+function isMobileLayout() {
+  return window.matchMedia('(max-width: 720px)').matches;
+}
+
+function getMarkerRadius() {
+  return isMobileLayout() ? 6 : MARKER_RADIUS;
+}
+
 function renderMap() {
   const container = document.getElementById('map-container');
   const W = container.clientWidth;
@@ -759,7 +1309,6 @@ function renderMap() {
 
   pathGen = d3.geoPath().projection(projection);
 
-  // Zoom behaviour
   zoom = d3.zoom()
     .scaleExtent([0.8, 12])
     .on('zoom', (event) => {
@@ -769,26 +1318,20 @@ function renderMap() {
 
   gMap = svg.append('g');
 
-  // Sphere (ocean)
   gMap.append('path')
-    .datum({type: 'Sphere'})
+    .datum({ type: 'Sphere' })
     .attr('class', 'sphere')
     .attr('d', pathGen);
 
-  // Graticule
   gMap.append('path')
     .datum(d3.geoGraticule()())
     .attr('class', 'graticule')
     .attr('d', pathGen);
 
-  // Countries
-  const renderedCountries = countries;
-
-  // Build numeric id → iso3 lookup via a quick hardcoded subset + name matching
   gMap.append('g')
     .attr('class', 'countries-group')
     .selectAll('path')
-    .data(renderedCountries)
+    .data(countries)
     .join('path')
     .attr('class', 'country')
     .attr('data-id', d => d.id)
@@ -799,10 +1342,8 @@ function renderMap() {
     .on('mouseout', onCountryOut)
     .on('click', onCountryClick);
 
-  // Markers group (above countries)
   gMap.append('g').attr('class', 'markers-group');
 
-  // Zoom buttons
   document.getElementById('zoom-in').onclick = () => svg.transition().call(zoom.scaleBy, 1.5);
   document.getElementById('zoom-out').onclick = () => svg.transition().call(zoom.scaleBy, 0.67);
   document.getElementById('btn-reset-zoom').onclick = () => {
@@ -812,7 +1353,6 @@ function renderMap() {
   svgSelection = svg;
 }
 
-// ── Load outbreak data from API ───────────────────────────
 async function loadOutbreakData(forceRefresh = false) {
   setStatus('loading', forceRefresh ? 'Refreshing WHO data...' : 'Fetching WHO outbreak data...');
   showOverlay(true);
@@ -835,37 +1375,26 @@ async function loadOutbreakData(forceRefresh = false) {
     }
   } catch (err) {
     console.error('Failed to load outbreak data:', err);
-    setStatus('error', 'Failed to fetch WHO data — check server logs');
+    setStatus('error', 'Failed to fetch WHO data - check server logs');
   } finally {
     showOverlay(false);
   }
 }
 
-// ── Apply outbreak data to map ────────────────────────────
 function applyOutbreakData(data, fetchedAt, isFallback) {
-  // Build role map
   countryRoleMap = {};
   (data.countries || []).forEach(c => {
     countryRoleMap[c.iso3] = c;
   });
 
-  // Update country fills
   updateCountryFills();
-
-  // Place markers
   renderMarkers(data.markers || []);
-
-  // Update sidebar
   updateSidebar(data, fetchedAt, isFallback);
 }
 
-// ── Country fills ─────────────────────────────────────────
 function updateCountryFills() {
   if (!topoData) return;
 
-  // Build numeric id → iso3 mapping from TopoJSON names
-  // TopoJSON numeric IDs are ISO 3166-1 numeric; we need alpha-3
-  // We'll match by manually mapping the most common ones + checking our data
   const numToAlpha3 = buildNumericToAlpha3Map();
 
   d3.selectAll('.country')
@@ -881,9 +1410,7 @@ function updateCountryFills() {
     });
 }
 
-// Build ISO numeric → alpha3 map using a comprehensive lookup
 function buildNumericToAlpha3Map() {
-  // Comprehensive ISO 3166-1 numeric to alpha-3 mapping
   return {
     4:'AFG',8:'ALB',12:'DZA',24:'AGO',32:'ARG',36:'AUS',40:'AUT',50:'BGD',56:'BEL',
     64:'BTN',68:'BOL',76:'BRA',100:'BGR',104:'MMR',116:'KHM',120:'CMR',124:'CAN',
@@ -914,11 +1441,11 @@ function buildNumericToAlpha3Map() {
   };
 }
 
-// ── Render case/death markers ─────────────────────────────
 function renderMarkers(markers) {
   if (!projection) return;
   const g = d3.select('.markers-group');
   g.selectAll('*').remove();
+  const markerRadius = getMarkerRadius();
 
   const projectedMarkers = markers
     .map(m => {
@@ -937,7 +1464,7 @@ function renderMarkers(markers) {
 
   groups.forEach(group => {
     const ordered = group.slice().sort((left, right) => left.type.localeCompare(right.type));
-    const spread = ordered.length > 1 ? 16 : 0;
+    const spread = ordered.length > 1 ? (isMobileLayout() ? 12 : 16) : 0;
 
     ordered.forEach((m, index) => {
       const offsetIndex = index - (ordered.length - 1) / 2;
@@ -954,7 +1481,7 @@ function renderMarkers(markers) {
 
         deathGroup.append('circle')
           .attr('class', 'marker-death-badge')
-          .attr('r', MARKER_RADIUS);
+          .attr('r', markerRadius);
 
         deathGroup.append('text')
           .attr('class', 'marker-death-count')
@@ -962,8 +1489,8 @@ function renderMarkers(markers) {
 
         deathGroup.append('text')
           .attr('class', 'marker-death-icon')
-          .attr('y', -11)
-          .text('☠');
+          .attr('y', -(markerRadius + 3))
+          .text('X');
       } else {
         const markerGroup = g.append('g')
           .attr('class', 'marker-case-group')
@@ -974,7 +1501,7 @@ function renderMarkers(markers) {
 
         markerGroup.append('circle')
           .attr('class', 'marker-case')
-          .attr('r', MARKER_RADIUS);
+          .attr('r', markerRadius);
 
         markerGroup.append('text')
           .attr('class', 'marker-case-count')
@@ -984,9 +1511,7 @@ function renderMarkers(markers) {
   });
 }
 
-// ── Sidebar update ────────────────────────────────────────
 function updateSidebar(data, fetchedAt, isFallback) {
-  // Header subtitle
   const summaryBits = [];
   if (data.summary?.totalCases != null) summaryBits.push(`${data.summary.totalCases} cases`);
   if (data.summary?.confirmedCases != null) summaryBits.push(`${data.summary.confirmedCases} confirmed`);
@@ -994,27 +1519,23 @@ function updateSidebar(data, fetchedAt, isFallback) {
   document.getElementById('header-subtitle').textContent =
     [data.title || 'WHO Outbreak Report', ...summaryBits].join(' | ');
 
-  // Fetched at
   if (fetchedAt) {
     const dt = new Date(fetchedAt);
     document.getElementById('fetched-at-label').textContent =
       dt.toLocaleTimeString() + ' ' + dt.toLocaleDateString();
   }
 
-  // Freshness badge
   const badge = document.getElementById('freshness-badge');
   badge.textContent = isFallback ? 'FALLBACK' : 'LIVE';
   badge.style.borderColor = isFallback ? 'var(--color-monitoring)' : 'var(--color-cases)';
   badge.style.color = isFallback ? 'var(--color-monitoring)' : 'var(--color-cases)';
 
-  // Counts
   const roles = ['cases', 'exposure', 'monitoring', 'mentioned'];
   for (const role of roles) {
     const n = (data.countries || []).filter(c => c.role === role).length;
     document.getElementById(`count-${role}`).textContent = n || '0';
   }
 
-  // Article link in statusbar
   if (data.articleUrl) {
     const el = document.getElementById('status-article');
     el.style.display = 'flex';
@@ -1023,7 +1544,6 @@ function updateSidebar(data, fetchedAt, isFallback) {
     link.textContent = data.articleUrl.replace('https://www.who.int', '');
   }
 
-  // Country list
   const listEl = document.getElementById('country-list');
   listEl.innerHTML = '';
 
@@ -1033,7 +1553,7 @@ function updateSidebar(data, fetchedAt, isFallback) {
   });
 
   if (sorted.length === 0) {
-    listEl.innerHTML = '<div style="padding:12px 16px;font-family:DM Mono,monospace;font-size:11px;color:var(--text-dim)">No countries found in report.</div>';
+    listEl.innerHTML = '<div style="padding:12px;color:var(--text-dim);font-size:10px;letter-spacing:0.14em;text-transform:uppercase">No countries found in report.</div>';
     return;
   }
 
@@ -1058,9 +1578,7 @@ function updateSidebar(data, fetchedAt, isFallback) {
   });
 }
 
-// ── Focus a country ───────────────────────────────────────
-function focusCountry(iso3, name) {
-  // Find the path with this alpha3
+function focusCountry(iso3) {
   const path = d3.selectAll('.country').filter(function() {
     return d3.select(this).attr('data-alpha3') === iso3;
   });
@@ -1081,7 +1599,6 @@ function focusCountry(iso3, name) {
     .call(zoom.transform, d3.zoomIdentity.translate(translate[0], translate[1]).scale(scale));
 }
 
-// ── Tooltip helpers ───────────────────────────────────────
 const numToAlpha3Cached = buildNumericToAlpha3Map();
 
 function onCountryHover(event, d) {
@@ -1091,11 +1608,16 @@ function onCountryHover(event, d) {
   const role = info ? info.role : 'none';
   showTooltip(event, name, role, alpha3);
 }
-function onCountryOut() { hideTooltip(); }
+
+function onCountryOut() {
+  hideTooltip();
+}
+
 function onCountryClick(event, d) {
   const alpha3 = numToAlpha3Cached[d.id] || null;
-  if (alpha3) focusCountry(alpha3, '');
+  if (alpha3) focusCountry(alpha3);
 }
+
 function onTooltipMove(event) {
   const tt = document.getElementById('tooltip');
   const container = document.getElementById('map-container');
@@ -1107,6 +1629,7 @@ function onTooltipMove(event) {
   tt.style.left = x + 'px';
   tt.style.top = y + 'px';
 }
+
 function showTooltip(event, name, role, alpha3, markerMeta) {
   const tt = document.getElementById('tooltip');
   document.getElementById('tt-name').textContent = name;
@@ -1125,7 +1648,7 @@ function showTooltip(event, name, role, alpha3, markerMeta) {
   else meta.textContent = '';
 
   if (role === 'death' || role === 'case') {
-    roleEl.textContent = role === 'death' ? '💀 FATALITY' : '⬤ ACTIVE CASE';
+    roleEl.textContent = role === 'death' ? 'FATALITY' : 'ACTIVE CASE';
     meta.textContent = role === 'case'
       ? `${markerMeta?.count || 0} case${markerMeta?.count === 1 ? '' : 's'} mapped to this location from the WHO report`
       : `${markerMeta?.count || 0} death${markerMeta?.count === 1 ? '' : 's'} mapped to this location from the WHO report`;
@@ -1134,10 +1657,10 @@ function showTooltip(event, name, role, alpha3, markerMeta) {
   const evidence = markerMeta?.evidence
     ? markerMeta.evidence
     : alpha3 && countryRoleMap[alpha3]?.evidence?.length
-    ? countryRoleMap[alpha3].evidence[0]
-    : outbreakData?.articleUrl
-      ? `WHO source: ${outbreakData.articleUrl}`
-      : '';
+      ? countryRoleMap[alpha3].evidence[0]
+      : outbreakData?.articleUrl
+        ? `WHO source: ${outbreakData.articleUrl}`
+        : '';
   const evidenceEl = document.getElementById('tt-evidence');
   evidenceEl.textContent = evidence ? `WHO reference: ${evidence}` : '';
   evidenceEl.style.display = evidence ? 'block' : 'none';
@@ -1145,32 +1668,32 @@ function showTooltip(event, name, role, alpha3, markerMeta) {
   onTooltipMove(event);
   tt.classList.add('visible');
 }
+
 function hideTooltip() {
   document.getElementById('tooltip').classList.remove('visible');
 }
 
-// ── Status helpers ────────────────────────────────────────
 function setStatus(type, text) {
   const dot = document.getElementById('status-dot');
   const statusText = document.getElementById('status-text');
   dot.className = 'status-dot ' + (type === 'ok' ? '' : type);
   statusText.textContent = text;
 }
+
 function showOverlay(visible) {
   document.getElementById('loading-overlay').classList.toggle('hidden', !visible);
 }
 
-// ── Refresh button ────────────────────────────────────────
 document.getElementById('btn-refresh').onclick = async function() {
   this.disabled = true;
   await loadOutbreakData(true);
   this.disabled = false;
 };
+
 document.getElementById('btn-theme').onclick = function() {
   applyTheme(currentTheme === 'light' ? 'dark' : 'light');
 };
 
-// ── Resize handler ────────────────────────────────────────
 window.addEventListener('resize', () => {
   if (topoData) {
     renderMap();
@@ -1178,7 +1701,6 @@ window.addEventListener('resize', () => {
   }
 });
 
-// ── Start ─────────────────────────────────────────────────
 init();
 </script>
 </body>

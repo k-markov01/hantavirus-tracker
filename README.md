@@ -19,6 +19,24 @@ open http://localhost:3000
 
 ---
 
+## GitHub Pages
+
+This repo can publish a static snapshot to GitHub Pages even though local development uses Express.
+
+Share URL:
+`https://k-markov01.github.io/hantavirus-tracker/`
+
+How it works:
+- `.github/workflows/deploy-pages.yml` builds a static `dist/` artifact on every push to `main`
+- `scripts/build-pages.js` fetches the latest WHO data at build time and writes `dist/api/outbreak.json`
+- the frontend first tries the live API, then falls back to the static snapshot automatically on Pages
+
+If GitHub Pages is not already enabled in the repository settings:
+- Go to `Settings > Pages`
+- Set `Source` to `GitHub Actions`
+
+---
+
 ## Features
 
 | Feature | Description |
