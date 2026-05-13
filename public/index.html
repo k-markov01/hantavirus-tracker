@@ -1228,6 +1228,7 @@ const STATIC_OUTBREAK_PATH = 'api/outbreak.json';
 
 let outbreakData = null;
 let countryRoleMap = {};
+let countryRoleNameMap = {};
 let topoData = null;
 let svgSelection, gMap, projection, pathGen, zoom;
 let currentTheme = localStorage.getItem('tracker-theme') || 'dark';
@@ -1383,8 +1384,13 @@ async function loadOutbreakData(forceRefresh = false) {
 
 function applyOutbreakData(data, fetchedAt, isFallback) {
   countryRoleMap = {};
+  countryRoleNameMap = {};
   (data.countries || []).forEach(c => {
     countryRoleMap[c.iso3] = c;
+    const normalizedName = normalizeCountryName(c.name);
+    if (normalizedName) {
+      countryRoleNameMap[normalizedName] = c.iso3;
+    }
   });
 
   updateCountryFills();
@@ -1395,18 +1401,16 @@ function applyOutbreakData(data, fetchedAt, isFallback) {
 function updateCountryFills() {
   if (!topoData) return;
 
-  const numToAlpha3 = buildNumericToAlpha3Map();
-
   d3.selectAll('.country')
     .attr('data-role', function(d) {
-      const alpha3 = numToAlpha3[d.id] || null;
+      const alpha3 = getCountryAlpha3FromFeature(d);
       if (alpha3 && countryRoleMap[alpha3]) {
         return countryRoleMap[alpha3].role;
       }
       return 'none';
     })
     .attr('data-alpha3', function(d) {
-      return numToAlpha3[d.id] || '';
+      return getCountryAlpha3FromFeature(d) || '';
     });
 }
 
@@ -1599,12 +1603,239 @@ function focusCountry(iso3) {
     .call(zoom.transform, d3.zoomIdentity.translate(translate[0], translate[1]).scale(scale));
 }
 
+function buildNumericToCountryNameMap() {
+  return {
+    4: 'Afghanistan',
+    8: 'Albania',
+    12: 'Algeria',
+    24: 'Angola',
+    31: 'Azerbaijan',
+    32: 'Argentina',
+    36: 'Australia',
+    40: 'Austria',
+    50: 'Bangladesh',
+    51: 'Armenia',
+    56: 'Belgium',
+    64: 'Bhutan',
+    68: 'Bolivia',
+    70: 'Bosnia and Herzegovina',
+    72: 'Botswana',
+    76: 'Brazil',
+    96: 'Brunei',
+    100: 'Bulgaria',
+    104: 'Myanmar',
+    108: 'Burundi',
+    112: 'Belarus',
+    116: 'Cambodia',
+    120: 'Cameroon',
+    124: 'Canada',
+    132: 'Cape Verde',
+    140: 'Central African Republic',
+    144: 'Sri Lanka',
+    152: 'Chile',
+    156: 'China',
+    158: 'Taiwan',
+    170: 'Colombia',
+    174: 'Comoros',
+    178: 'Republic of the Congo',
+    180: 'DR Congo',
+    188: 'Costa Rica',
+    191: 'Croatia',
+    192: 'Cuba',
+    196: 'Cyprus',
+    203: 'Czechia',
+    204: 'Benin',
+    208: 'Denmark',
+    212: 'Dominica',
+    214: 'Dominican Republic',
+    218: 'Ecuador',
+    222: 'El Salvador',
+    231: 'Ethiopia',
+    232: 'Eritrea',
+    233: 'Estonia',
+    238: 'Falkland Islands',
+    242: 'Fiji',
+    246: 'Finland',
+    250: 'France',
+    262: 'Djibouti',
+    266: 'Gabon',
+    268: 'Georgia',
+    270: 'Gambia',
+    276: 'Germany',
+    288: 'Ghana',
+    300: 'Greece',
+    304: 'Greenland',
+    308: 'Grenada',
+    312: 'Guadeloupe',
+    316: 'Guam',
+    320: 'Guatemala',
+    324: 'Guinea',
+    328: 'Guyana',
+    332: 'Haiti',
+    334: 'Heard Island and McDonald Islands',
+    340: 'Honduras',
+    348: 'Hungary',
+    352: 'Iceland',
+    356: 'India',
+    360: 'Indonesia',
+    364: 'Iran',
+    368: 'Iraq',
+    372: 'Ireland',
+    376: 'Israel',
+    380: 'Italy',
+    388: 'Jamaica',
+    392: 'Japan',
+    398: 'Kazakhstan',
+    400: 'Jordan',
+    404: 'Kenya',
+    408: 'North Korea',
+    410: 'South Korea',
+    414: 'Kuwait',
+    417: 'Kyrgyzstan',
+    418: 'Laos',
+    422: 'Lebanon',
+    426: 'Lesotho',
+    428: 'Latvia',
+    430: 'Liberia',
+    434: 'Libya',
+    440: 'Lithuania',
+    442: 'Luxembourg',
+    450: 'Madagascar',
+    454: 'Malawi',
+    458: 'Malaysia',
+    462: 'Maldives',
+    466: 'Mali',
+    470: 'Malta',
+    478: 'Mauritania',
+    480: 'Mauritius',
+    484: 'Mexico',
+    496: 'Mongolia',
+    500: 'Montserrat',
+    504: 'Morocco',
+    508: 'Mozambique',
+    516: 'Namibia',
+    520: 'Nauru',
+    524: 'Nepal',
+    528: 'Netherlands',
+    540: 'New Caledonia',
+    548: 'Vanuatu',
+    554: 'New Zealand',
+    558: 'Nicaragua',
+    562: 'Niger',
+    566: 'Nigeria',
+    570: 'Niue',
+    578: 'Norway',
+    580: 'Northern Mariana Islands',
+    584: 'Marshall Islands',
+    586: 'Pakistan',
+    591: 'Panama',
+    598: 'Papua New Guinea',
+    600: 'Paraguay',
+    604: 'Peru',
+    608: 'Philippines',
+    612: 'Pitcairn Islands',
+    616: 'Poland',
+    620: 'Portugal',
+    626: 'Timor-Leste',
+    630: 'Puerto Rico',
+    634: 'Qatar',
+    642: 'Romania',
+    643: 'Russia',
+    646: 'Rwanda',
+    654: 'Saint Helena, Ascension and Tristan da Cunha',
+    659: 'Saint Kitts and Nevis',
+    662: 'Saint Lucia',
+    666: 'Saint Pierre and Miquelon',
+    670: 'Saint Vincent and the Grenadines',
+    674: 'San Marino',
+    678: 'Sao Tome and Principe',
+    682: 'Saudi Arabia',
+    686: 'Senegal',
+    690: 'Seychelles',
+    694: 'Sierra Leone',
+    704: 'Vietnam',
+    706: 'Somalia',
+    710: 'South Africa',
+    716: 'Zimbabwe',
+    724: 'Spain',
+    736: 'Sudan',
+    740: 'Suriname',
+    752: 'Sweden',
+    756: 'Switzerland',
+    760: 'Syria',
+    762: 'Tajikistan',
+    764: 'Thailand',
+    768: 'Togo',
+    776: 'Tonga',
+    780: 'Trinidad and Tobago',
+    784: 'United Arab Emirates',
+    788: 'Tunisia',
+    792: 'Turkey',
+    795: 'Turkmenistan',
+    798: 'Tuvalu',
+    800: 'Uganda',
+    804: 'Ukraine',
+    818: 'Egypt',
+    826: 'United Kingdom',
+    840: 'United States',
+    850: 'United States Virgin Islands',
+    854: 'Burkina Faso',
+    858: 'Uruguay',
+    860: 'Uzbekistan',
+    862: 'Venezuela',
+    882: 'Samoa',
+    887: 'Yemen',
+    894: 'Zambia',
+  };
+}
+
 const numToAlpha3Cached = buildNumericToAlpha3Map();
+const numToCountryNameCached = buildNumericToCountryNameMap();
+
+function normalizeCountryName(value) {
+  return String(value || '').trim().toLowerCase();
+}
+
+function normalizeCountryNumericId(value) {
+  if (value == null || value === '') return null;
+  const normalized = Number.parseInt(String(value), 10);
+  return Number.isFinite(normalized) ? normalized : null;
+}
+
+function getCountryAlpha3FromNumericId(numericId) {
+  const normalizedId = normalizeCountryNumericId(numericId);
+  return normalizedId != null ? numToAlpha3Cached[normalizedId] || null : null;
+}
+
+function getCountryAlpha3FromFeature(feature) {
+  const numericMatch = getCountryAlpha3FromNumericId(feature?.id);
+  if (numericMatch) return numericMatch;
+
+  const featureName = normalizeCountryName(feature?.properties?.name);
+  return featureName ? countryRoleNameMap[featureName] || null : null;
+}
+
+function getCountryDisplayName(alpha3, numericId, fallbackName) {
+  if (alpha3 && countryRoleMap[alpha3]?.name) {
+    return countryRoleMap[alpha3].name;
+  }
+
+  const normalizedId = normalizeCountryNumericId(numericId);
+  if (normalizedId != null && numToCountryNameCached[normalizedId]) {
+    return numToCountryNameCached[normalizedId];
+  }
+
+  if (fallbackName) {
+    return fallbackName;
+  }
+
+  return alpha3 || `Country #${numericId}`;
+}
 
 function onCountryHover(event, d) {
-  const alpha3 = numToAlpha3Cached[d.id] || null;
+  const alpha3 = getCountryAlpha3FromFeature(d);
   const info = alpha3 ? countryRoleMap[alpha3] : null;
-  const name = info ? info.name : `Country #${d.id}`;
+  const name = getCountryDisplayName(alpha3, d.id, d.properties?.name);
   const role = info ? info.role : 'none';
   showTooltip(event, name, role, alpha3);
 }
@@ -1614,7 +1845,9 @@ function onCountryOut() {
 }
 
 function onCountryClick(event, d) {
-  const alpha3 = numToAlpha3Cached[d.id] || null;
+  const alpha3 = getCountryAlpha3FromFeature(d);
+  const info = alpha3 ? countryRoleMap[alpha3] : null;
+  showTooltip(event, getCountryDisplayName(alpha3, d.id, d.properties?.name), info ? info.role : 'none', alpha3);
   if (alpha3) focusCountry(alpha3);
 }
 
