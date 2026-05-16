@@ -389,6 +389,7 @@ function parseSummary(bodyText) {
   const summary = {
     totalCases: parseCount(/a total of ([a-z]+|\d+) cases/i, bodyText),
     confirmedCases: null,
+    inconclusiveCases: null,
     probableCases: null,
     deaths: parseCount(/including ([a-z]+|\d+) deaths/i, bodyText),
     confirmedDeaths: null,
@@ -399,6 +400,24 @@ function parseSummary(bodyText) {
   if (caseBreakdownMatch) {
     summary.confirmedCases = parseNumericToken(caseBreakdownMatch[1]);
     summary.probableCases = parseNumericToken(caseBreakdownMatch[2]);
+  }
+
+  const expandedCaseBreakdownMatch = bodyText.match(
+    /\(([a-z]+|\d+) confirmed,\s*([a-z]+|\d+) inconclusive and\s*([a-z]+|\d+) probable cases\)/i,
+  );
+  if (expandedCaseBreakdownMatch) {
+    summary.confirmedCases = parseNumericToken(expandedCaseBreakdownMatch[1]);
+    summary.inconclusiveCases = parseNumericToken(expandedCaseBreakdownMatch[2]);
+    summary.probableCases = parseNumericToken(expandedCaseBreakdownMatch[3]);
+  }
+
+  const narrativeCaseBreakdownMatch = bodyText.match(
+    /([a-z]+|\d+) cases (?:were )?laboratory-confirmed.*?,\s*([a-z]+|\d+) (?:are|were) probable,\s*and\s*([a-z]+|\d+) case(?:s)? (?:remains?|remain) inconclusive/i,
+  );
+  if (narrativeCaseBreakdownMatch) {
+    summary.confirmedCases = parseNumericToken(narrativeCaseBreakdownMatch[1]);
+    summary.probableCases = parseNumericToken(narrativeCaseBreakdownMatch[2]);
+    summary.inconclusiveCases = parseNumericToken(narrativeCaseBreakdownMatch[3]);
   }
 
   const deathBreakdownMatch = bodyText.match(/including [a-z0-9]+ deaths \(([a-z]+|\d+) confirmed and ([a-z]+|\d+) probable\)/i);
@@ -473,6 +492,47 @@ function parseCaseRecords(descriptionText) {
   });
 }
 
+function buildSummaryCaseMentions(descriptionText) {
+  const mentions = new Map();
+  const sentences = splitSentences(descriptionText);
+
+  const addMention = (iso3, evidence, count = 1) => {
+    if (!iso3) return;
+    const entry = mentions.get(iso3) || { count: 0, evidence: [] };
+    entry.count += count;
+
+    const snippet = trimSnippet(evidence, 240);
+    if (snippet && !entry.evidence.includes(snippet) && entry.evidence.length < 3) {
+      entry.evidence.push(snippet);
+    }
+
+    mentions.set(iso3, entry);
+  };
+
+  const addMentionsFromPattern = (sentence, pattern) => {
+    const matches = sentence.matchAll(pattern);
+    for (const match of matches) {
+      const fragment = normalizeText(match[1]);
+      const country = extractCountriesFromText(fragment)[0];
+      if (country) {
+        addMention(country.iso3, sentence);
+      }
+    }
+  };
+
+  for (const sentence of sentences) {
+    addMentionsFromPattern(sentence, /\bconfirmed case(?:s)? from ([^,.;]+?)(?=,| who\b| tested\b| and\b|$)/gi);
+    addMentionsFromPattern(sentence, /\bprobable case(?:s)? from ([^,.;]+?)(?=,| who\b| tested\b| and\b|$)/gi);
+    addMentionsFromPattern(sentence, /\binconclusive result for a case in (?:the )?([^,.;]+?)(?=,|\.| is\b| and\b|$)/gi);
+
+    if (/inconclusive laboratory results|case remains inconclusive|case considered inconclusive/i.test(sentence)) {
+      addMentionsFromPattern(sentence, /\brepatriated to (?:the )?([^,.;]+?)(?=,|\.| is\b| and\b|$)/gi);
+    }
+  }
+
+  return mentions;
+}
+
 function buildCountryEvidence(descriptionText, caseRecords) {
   const evidenceByIso3 = new Map();
   const allSentences = splitSentences(descriptionText);
@@ -540,6 +600,18 @@ function buildMarkerRollups(caseRecords) {
 function buildCountryData(descriptionText, caseRecords) {
   const { caseMarkerRollups, deathMarkerRollups } = buildMarkerRollups(caseRecords);
   const countryEvidence = buildCountryEvidence(descriptionText, caseRecords);
+  const summaryCaseMentions = buildSummaryCaseMentions(descriptionText);
+
+  for (const [iso3, info] of summaryCaseMentions.entries()) {
+    const existingEvidence = countryEvidence.get(iso3) || [];
+    const mergedEvidence = [...existingEvidence];
+    for (const snippet of info.evidence) {
+      if (!mergedEvidence.includes(snippet) && mergedEvidence.length < 3) {
+        mergedEvidence.push(snippet);
+      }
+    }
+    countryEvidence.set(iso3, mergedEvidence);
+  }
 
   const countries = [];
   const seen = new Set();
@@ -553,6 +625,10 @@ function buildCountryData(descriptionText, caseRecords) {
 
   for (const [iso3, markerInfo] of caseMarkerRollups.entries()) {
     addCountry(iso3, 'cases', markerInfo.count);
+  }
+
+  for (const [iso3, summaryInfo] of summaryCaseMentions.entries()) {
+    addCountry(iso3, 'cases', summaryInfo.count);
   }
 
   for (const iso3 of ['ARG', 'CHL', 'URY']) {
@@ -579,11 +655,29 @@ function buildCountryData(descriptionText, caseRecords) {
   };
 }
 
+function getMarkerCoords(key) {
+  if (MARKER_COORDS[key]) {
+    return MARKER_COORDS[key];
+  }
+
+  const country = iso3Index.get(key);
+  if (!country) return null;
+
+  const latlng = country.capitalInfo?.latlng || country.latlng;
+  if (!Array.isArray(latlng) || latlng.length < 2) return null;
+
+  return {
+    label: getCountryDisplayName(key),
+    lat: latlng[0],
+    lon: latlng[1],
+  };
+}
+
 function buildMarkers(caseMarkerRollups, deathMarkerRollups = new Map()) {
   const markers = [];
 
   for (const [key, markerInfo] of caseMarkerRollups.entries()) {
-    const coords = MARKER_COORDS[key];
+    const coords = getMarkerCoords(key);
     if (!coords) continue;
 
     markers.push({
@@ -598,7 +692,7 @@ function buildMarkers(caseMarkerRollups, deathMarkerRollups = new Map()) {
   }
 
   for (const [key, markerInfo] of deathMarkerRollups.entries()) {
-    const coords = MARKER_COORDS[key];
+    const coords = getMarkerCoords(key);
     if (!coords) continue;
 
     markers.push({
@@ -613,6 +707,102 @@ function buildMarkers(caseMarkerRollups, deathMarkerRollups = new Map()) {
   }
 
   return markers;
+}
+
+function addFallbackCaseMarkers(countries, markers) {
+  const existingCaseMarkers = new Set(markers.filter((marker) => marker.type === 'case').map((marker) => marker.iso3));
+
+  for (const country of countries) {
+    if (country.role !== 'cases' || existingCaseMarkers.has(country.iso3)) continue;
+
+    const coords = getMarkerCoords(country.iso3);
+    if (!coords) continue;
+
+    markers.push({
+      label: coords.label,
+      iso3: country.iso3,
+      lat: coords.lat,
+      lon: coords.lon,
+      type: 'case',
+      count: country.caseCount || 1,
+      evidence: country.evidence?.[0] || '',
+    });
+  }
+
+  return markers;
+}
+
+function getPreviousDonUrl(url) {
+  const match = String(url || '').match(/DON(\d+)/i);
+  if (!match) return null;
+
+  const donNumber = Number(match[1]);
+  if (!Number.isFinite(donNumber) || donNumber <= 1) return null;
+
+  return `${WHO_DON_BASE}2026-DON${donNumber - 1}`;
+}
+
+function mergeEvidence(primary = [], secondary = []) {
+  return [...new Set([...(primary || []), ...(secondary || [])])].slice(0, 3);
+}
+
+function mergeCountries(primaryCountries = [], secondaryCountries = []) {
+  const merged = new Map();
+  const rolePriority = { cases: 0, exposure: 1, monitoring: 2, mentioned: 3 };
+
+  for (const country of secondaryCountries) {
+    merged.set(country.iso3, { ...country, evidence: [...(country.evidence || [])] });
+  }
+
+  for (const country of primaryCountries) {
+    const existing = merged.get(country.iso3);
+    if (!existing) {
+      merged.set(country.iso3, { ...country, evidence: [...(country.evidence || [])] });
+      continue;
+    }
+
+    const nextRole =
+      (rolePriority[country.role] ?? Number.MAX_SAFE_INTEGER) <= (rolePriority[existing.role] ?? Number.MAX_SAFE_INTEGER)
+        ? country.role
+        : existing.role;
+
+    merged.set(country.iso3, {
+      ...existing,
+      ...country,
+      role: nextRole,
+      caseCount: country.caseCount != null ? country.caseCount : existing.caseCount,
+      evidence: mergeEvidence(country.evidence, existing.evidence),
+    });
+  }
+
+  return [...merged.values()].sort((left, right) => {
+    const roleDelta = (rolePriority[left.role] ?? 99) - (rolePriority[right.role] ?? 99);
+    return roleDelta !== 0 ? roleDelta : left.name.localeCompare(right.name);
+  });
+}
+
+function mergeMarkers(primaryMarkers = [], secondaryMarkers = []) {
+  const merged = new Map();
+
+  for (const marker of [...secondaryMarkers, ...primaryMarkers]) {
+    const key = `${marker.type}:${marker.iso3}:${marker.lat}:${marker.lon}`;
+    if (!merged.has(key)) {
+      merged.set(key, marker);
+    }
+  }
+
+  return [...merged.values()];
+}
+
+function mergeOutbreakData(primary, secondary) {
+  const countries = mergeCountries(primary.countries, secondary.countries);
+  const markers = addFallbackCaseMarkers(countries, mergeMarkers(primary.markers, secondary.markers));
+
+  return {
+    ...primary,
+    countries,
+    markers,
+  };
 }
 
 function buildFallbackOutbreakData() {
@@ -738,7 +928,7 @@ async function parseArticle(url) {
     ).length;
   }
   const { countries, caseMarkerRollups, deathMarkerRollups } = buildCountryData(descriptionText, caseRecords);
-  const markers = buildMarkers(caseMarkerRollups, deathMarkerRollups);
+  const markers = addFallbackCaseMarkers(countries, buildMarkers(caseMarkerRollups, deathMarkerRollups));
 
   console.log(
     `[parse] cases=${summary.totalCases || 'n/a'} countries=${countries.length} mappedMarkers=${markers.length}`,
@@ -757,7 +947,27 @@ async function parseArticle(url) {
 
 async function fetchOutbreakData() {
   const articleUrl = await discoverLatestArticle();
-  return parseArticle(articleUrl);
+  const latest = await parseArticle(articleUrl);
+  const needsHistoricalContext =
+    latest.markers.length === 0 ||
+    (Number(latest.summary?.deaths || 0) > 0 && !latest.markers.some((marker) => marker.type === 'death'));
+
+  if (!needsHistoricalContext) {
+    return latest;
+  }
+
+  const previousUrl = getPreviousDonUrl(articleUrl);
+  if (!previousUrl) {
+    return latest;
+  }
+
+  try {
+    const previousDetailed = await parseArticle(previousUrl);
+    return mergeOutbreakData(latest, previousDetailed);
+  } catch (error) {
+    console.warn('[parse] failed to enrich with previous DON:', error.message);
+    return latest;
+  }
 }
 
 module.exports = {
